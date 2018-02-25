@@ -50,7 +50,7 @@ def main(args):
 Sample execution: 
 python preprocess.py raw_data_dir target_dir 
 '''
-DESCRIPTION = """Preprocess images in RAW_DATA directory."""
+DESCRIPTION = """Preprocess images in raw_data_dir and store the preprocessed result in target_dir."""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
