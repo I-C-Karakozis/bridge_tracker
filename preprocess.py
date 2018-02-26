@@ -42,6 +42,7 @@ def main(args):
     for rimg_name in raw_imgs:
         print(count)
         rimg = cv2.imread(os.path.join(args.raw_data_dir, rimg_name))
+        print(np.shape(rimg))
         adjusted = adjust_dim(rimg, WIDTH)
         cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(count)), adjusted)
         count = count + 1

@@ -1,6 +1,6 @@
 ############## Playing Card Detector Functions ###############
 #
-# Code borrowed by Evan Juras (with minor modifications)
+# Code borrowed by Evan Juras (with minor modifications and additions)
 # Source: https://github.com/EdjeElectronics/OpenCV-Playing-Card-Detector
 # Description: Functions and classes for CardDetector.py that perform 
 # various steps of the card detection algorithm
@@ -235,6 +235,35 @@ def preprocess_card(contour, image):
         qCard.suit_img = Qsuit_sized
 
     return qCard
+
+def extract_card(contour, image):
+    """Uses contour to find extract warped card image."""
+
+    # Initialize new Query_card object
+    qCard = Query_card()
+
+    qCard.contour = contour
+
+    # Find perimeter of card and use it to approximate corner points
+    peri = cv2.arcLength(contour,True)
+    approx = cv2.approxPolyDP(contour,0.01*peri,True)
+    pts = np.float32(approx)
+    qCard.corner_pts = pts
+
+    # Find width and height of card's bounding rectangle
+    x,y,w,h = cv2.boundingRect(contour)
+    qCard.width, qCard.height = w, h
+
+    # Find center point of card by taking x and y average of the four corners.
+    average = np.sum(pts, axis=0)/len(pts)
+    cent_x = int(average[0][0])
+    cent_y = int(average[0][1])
+    qCard.center = [cent_x, cent_y]
+
+    # Warp card into 200x300 flattened image using perspective transform
+    qCard.warp = flattener(image, pts, w, h)
+
+    return qCard.warp
 
 def match_card(qCard, train_ranks, train_suits):
     """Finds best rank and suit matches for the query card. Differences

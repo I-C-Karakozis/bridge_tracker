@@ -16,6 +16,10 @@ def main(args):
     image = cv2.imread(args.test_img)
     green_mu, green_sigmas = imeditor.model_boundary(image)
     no_felt = imeditor.remove_background(image, green_mu, green_sigmas)
+    # cv2.imshow("no_felt",no_felt)
+    # key = cv2.waitKey(100000) & 0xFF
+    # if key == ord("q"):
+    #     return
 
     # Pre-process camera image (gray, blur, and threshold it)
     pre_proc = Cards.preprocess_image(no_felt)
@@ -34,6 +38,7 @@ def main(args):
         # For each contour detected:
         for i in range(len(cnts_sort)):
             if (cnt_is_card[i] == 1):
+                print(cnts_sort[i])
                 # Create a card object from the contour and append it to the list of cards.
                 # preprocess_card function takes the card contour and contour and
                 # determines the cards properties (corner points, etc). It generates a
@@ -65,13 +70,13 @@ def main(args):
 
 '''
 Sample execution: 
-python preprocess.py raw_data_dir target_dir 
+python base_classifier.py 1080p.image 
 '''
-DESCRIPTION = """Baseline classifier of playing card suit-value. Requires cards placed on green felt."""
+DESCRIPTION = """Baseline classifier of playing card suit-value. 
+                 Requires cards placed on green felt."""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('test_img', help='Directory with raw images.')
-    # parser.add_argument('target_dir', help='Directory to store adjusted images in.')
     args = parser.parse_args()
     main(args)

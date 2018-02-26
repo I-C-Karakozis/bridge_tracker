@@ -12,6 +12,10 @@ CONFIDENCE = 99
 # we use 3 degrees of freedom bc we use the RGB color space
 DOF = 3
 
+# despeckling configuration
+MEDFILT_ITERS = 1
+MEDFILT_SIZE = 5
+
 ### ------------------------ ###
 
 def model_boundary(img):
@@ -50,11 +54,16 @@ def remove_background(img, mu, sigmas):
     '''
     dims = np.shape(img)
 
+    # find foreground mask
     zscore = np.square((img - mu).astype(np.float) / sigmas)
     zscore = np.reshape(np.apply_over_axes(np.sum, zscore, [2]), (dims[0], dims[1]))
     zscore = np.repeat(zscore[:, :, np.newaxis], 3, axis=2)
     mask = np.where(stats.h_test(zscore, confidence=CONFIDENCE, 
                                        dof=DOF), 0, 255).astype(np.uint8)
+
+    # despeckle
+    for j in range(MEDFILT_ITERS):
+        mask = cv2.medianBlur(mask, MEDFILT_SIZE)
 
     black_frame = np.zeros(dims, dtype=np.uint8)
     foreground = np.where(mask > 0, img, black_frame)
@@ -71,3 +80,4 @@ def correct_img_dim(image):
     # resize image into (IM_HEIGHT x IM_WIDTH)
     corrected = cv2.resize(image, (IM_WIDTH, IM_HEIGHT))
     return corrected
+    
