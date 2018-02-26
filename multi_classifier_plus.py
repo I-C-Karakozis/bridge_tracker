@@ -8,10 +8,12 @@ from tools.general_purpose import *
 
 def main(args):
 
-    # load groundtruth
+    # load groundtruth images and their labels
     path = os.path.dirname(os.path.abspath(__file__))
     gt_labels = os.listdir(os.path.join(path, "gt"))
     gt_imgs = load_imgs_gr("gt", gt_labels)
+    vfunc = np.vectorize(lambda t: t[0:2])
+    gt_labels = vfunc(gt_labels)
 
     # collect all testing data filenames
     data_filenames = []

@@ -1,0 +1,9 @@
+12/155 mistakes --> 92% accuracy
+- 1 unidentified (but blurry card)
+- 3 wrong suit
+- 8 wrong rank
+
+next steps 
+- better labels
+- data augment complete
+- test on more data
