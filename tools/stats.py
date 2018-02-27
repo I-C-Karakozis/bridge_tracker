@@ -43,7 +43,7 @@ def h_test(z_stat, dof=3, confidence=95):
         elif confidence == 98:
              return z_stat < 9.837   
         elif confidence == 99:
-            return z_stat < 5*11.345
+            return z_stat < 7*11.345
         else:
             print("Bad confidence level input.")
             return None

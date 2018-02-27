@@ -4,6 +4,6 @@
 - 8 wrong rank
 
 next steps 
-- better labels
-- data augment complete
-- test on more data
+- collect samples: different lighting to fine tune threshold --> standardize lighting
+- test on more data: multiple cards per image
+- formalize pipeline

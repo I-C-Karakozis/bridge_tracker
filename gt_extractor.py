@@ -37,7 +37,7 @@ def main(args):
             # For each card contour detected, extract card
             for i in range(len(cnts_sort)):
                 if (cnt_is_card[i] == 1):
-                    print("hi")
+                    print("found")
                     card = Cards.extract_card(cnts_sort[i], image)
                     cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), card)
                     imgs = imgs + 1

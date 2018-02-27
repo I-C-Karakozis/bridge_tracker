@@ -23,14 +23,16 @@ def main(args):
         dst = imutils.rotate_bound(gt_image, 90)
         augm = cv2.resize(dst, (cols, rows))
 
-        cv2.imwrite(os.path.join(args.target_dir, label+('{:03d}.png'.format(imgs))), augm)
+        file = os.path.join(args.gt_dir, label+('{:03d}.png'.format(imgs)))
+        print(file)
+        cv2.imwrite(file, augm)
         imgs = imgs + 1
 
     return
 
 '''
 Sample execution: 
-python gt_augmnet.py gt_dir target_dir 
+python gt_augmnet.py gt_dir
 '''
 DESCRIPTION = """Augment ground truth images by considering horizontal warping them
                  to a horizontal perspective."""
@@ -38,6 +40,5 @@ DESCRIPTION = """Augment ground truth images by considering horizontal warping t
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('gt_dir', help='Directory of groundtruth data.')
-    parser.add_argument('target_dir', help='Directory to store classified images in.')
     args = parser.parse_args()
     main(args)
