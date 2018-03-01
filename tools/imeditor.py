@@ -16,6 +16,18 @@ DOF = 3
 MEDFILT_ITERS = 1
 MEDFILT_SIZE = 5
 
+# threshold
+WHITE_T = 200
+
+# grayscale label values
+WHITE = 255
+RED = 60
+BLACK = 0
+
+# red and black suit
+RED_S = ['H', 'D']
+BLACK_S = ['S', 'C']
+
 ### ------------------------ ###
 
 def model_boundary(img):
@@ -80,4 +92,19 @@ def correct_img_dim(image):
     # resize image into (IM_HEIGHT x IM_WIDTH)
     corrected = cv2.resize(image, (IM_WIDTH, IM_HEIGHT))
     return corrected
+
+def label_pixels(image, suit):
+    ''' Label all pixels of image as white and 
+        black or red based on its suit.'''
+
+    for pixel in np.nditer(image, op_flags=['readwrite']):
+        if pixel >= WHITE_T:
+            pixel[...] = WHITE
+        elif suit in BLACK_S:
+            pixel[...] = BLACK
+        elif suit in RED_S:
+            pixel[...] = RED
+        else:
+            print("Bad file name.", img_file)
+            exit()
     

@@ -10,8 +10,8 @@ def main(args):
 
     # load groundtruth images and their labels
     path = os.path.dirname(os.path.abspath(__file__))
-    gt_labels = os.listdir(os.path.join(path, "gt"))
-    gt_imgs = load_imgs_gr("gt", gt_labels)
+    gt_labels = os.listdir(os.path.join(path, args.gt_dir))
+    gt_imgs = load_imgs_gr(args.gt_dir, gt_labels)
     vfunc = np.vectorize(lambda t: t[0:2])
     gt_labels = vfunc(gt_labels)
 
@@ -56,8 +56,7 @@ def main(args):
                     cards.append(Cards.preprocess_card(cnts_sort[i],image))
 
                     # Find the best rank and suit match for the card.
-                    Cards.match_card_x(cards[k], gt_labels, gt_imgs)
-                    cards[k].best_match, cards[k].diff = Cards.match_card_x(cards[k],gt_labels,gt_imgs)
+                    cards[k].best_match, cards[k].diff = Cards.match_card_diff(cards[k],gt_labels,gt_imgs)
 
                     # Draw center point and match result on the image.
                     image = Cards.draw_results(image, cards[k])
@@ -82,12 +81,13 @@ def main(args):
 
 '''
 Sample execution: 
-python multi_classifier_x.py data_dir target_dir 
+python multi_classifier.py gt_dir data_dir target_dir 
 '''
 DESCRIPTION = """Multi-classifier of playing card suit-value. Requires cards placed on green felt."""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument('gt_dir', help='Directory of groundtruth data.')
     parser.add_argument('data_dir', help='Directory of testing data.')
     parser.add_argument('target_dir', help='Directory to store classified images in.')
     args = parser.parse_args()

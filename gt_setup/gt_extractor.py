@@ -42,8 +42,6 @@ def main(args):
                     cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), card)
                     imgs = imgs + 1
 
-    return
-
 '''
 Sample execution: 
 python gt_extractor.py data_dir target_dir 
