@@ -1,9 +1,11 @@
-12/155 mistakes --> 92% accuracy
-- 1 unidentified (but blurry card)
-- 3 wrong suit
-- 8 wrong rank
+20/164 mistakes --> 88% accuracy
+99% successful localization
+- almost all wrong rank or wrong suit of same color
 
 next steps 
-- collect samples: different lighting to fine tune threshold --> standardize lighting
-- test on more data: multiple cards per image
-- formalize pipeline
+- collect samples: entire deck under 2 different lighting conditions --> standardize lighting
+- multiple cards per image
+
+assumptions:
+- for every card depicted, we can identify the suit
+- card on green felt with not super tight bounding box

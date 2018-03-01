@@ -21,11 +21,16 @@ def main(args):
         for name in files:
             data_filenames.append(os.path.join(path, name))
 
-    # remove background felt from image
+    # localize and classify all cards on each image
     imgs = 0
     for img_file in data_filenames:
+        # read image
         print(imgs, "-", img_file)
         image = cv2.imread(img_file)
+
+        # identify card suit
+        card_dir = img_file.split('/')[-2]
+        suit = card_dir[1]
 
         # Remove felt background
         green_mu, green_sigmas = imeditor.model_boundary(image)
@@ -56,11 +61,16 @@ def main(args):
                     cards.append(Cards.preprocess_card(cnts_sort[i],image))
 
                     # Find the best rank and suit match for the card.
-                    cards[k].best_match, cards[k].diff = Cards.match_card_diff(cards[k],gt_labels,gt_imgs)
+                    cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs,suit)
 
                     # Draw center point and match result on the image.
                     image = Cards.draw_results(image, cards[k])
                     k = k + 1
+
+                    # cv2.imshow(img_file,cards[k-1].warp)
+                    # key = cv2.waitKey(100000) & 0xFF
+                    # if key == ord("q"):
+                    #     return
             
             # Draw card contours on image (have to do contours all at once or
             # they do not show up properly for some reason)
@@ -72,10 +82,6 @@ def main(args):
         
         cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), image)
         imgs = imgs + 1
-        # cv2.imshow("Card Detector",image)
-        # key = cv2.waitKey(100000) & 0xFF
-        # if key == ord("q"):
-        #     return
 
     return
 

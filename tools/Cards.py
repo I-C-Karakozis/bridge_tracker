@@ -12,15 +12,12 @@ import cv2
 import sys
 import time
 
+from tools import imeditor
+
 ### Constants ###
 
 # Adaptive threshold levels
 BKG_THRESH = 60
-CARD_THRESH = 30
-
-# Width and height of card corner, where rank and suit are
-CORNER_WIDTH = 32
-CORNER_HEIGHT = 84
 
 CARD_MAX_AREA = 1200000
 CARD_MIN_AREA = 1000 #25000
@@ -165,52 +162,22 @@ def extract_card(contour, image):
 
     return qCard.warp
   
-def match_card_diff(qCard, train_labels, train_images):
+def match_card(qCard, train_labels, train_images, suit):
     """Finds best card match for the query card. Differences
     the query card image with the groundtruth card images.
     The best match is the groundtrugh that has the least difference."""
 
     best_match_diff = sys.maxint
     best_match = "Unknown"
-    # print(np.histogram(qCard.warp, bins=25))
+
+    # label pixels
+    imeditor.label_pixels(qCard.warp, suit)
         
     # Difference the query card from each of the groundtruth images,
     # and store the result with the least difference
     for gt_img, gt_label in zip(train_images, train_labels):
 
-            diff_img = cv2.absdiff(qCard.warp, gt_img)
-            diff = int(np.sum(diff_img)/255)
-            
-            if diff < best_match_diff:
-                best_match = gt_label
-                best_match_diff = diff
-
-    # Return the identiy of the card and the quality of the match
-    return best_match, best_match_diff
-
-def match_card_clust(qCard, train_labels, train_images):
-    """Finds best card match for the query card. Differences
-    the query card image with the groundtruth card images.
-    The best match is the groundtrugh that has the least difference."""
-
-    best_match_diff = sys.maxint
-    best_match = "Unknown"
-    dims = np.shape(qCard.warp)
-    pixels = dims[0]*dims[1]
-    warp_flat = qCard.warp.reshape(pixels, 1)
-    ms = KMeans(n_clusters=3)
-        
-    # Difference the query card from each of the groundtruth images,
-    # and store the result with the least difference
-    for gt_img, gt_label in zip(train_images, train_labels):
-
-            print(gt_label)
-            gt_img_flat = gt_img.reshape(pixels, 1)
-            X = np.concatenate((warp_flat, gt_img_flat), axis=0)
-            Y = ms.fit_predict(X)
-            Y_warp = Y[:pixels]
-            Y_gt_img = Y[pixels:]
-            diff = np.sum(Y_warp == Y_gt_img)
+            diff = np.sum(qCard.warp != gt_img)
             
             if diff < best_match_diff:
                 best_match = gt_label
