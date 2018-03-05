@@ -29,8 +29,8 @@ def main(args):
         image = cv2.imread(img_file)
 
         # identify card suit
-        card_dir = img_file.split('/')[-2]
-        suit = card_dir[1]
+        # card_dir = img_file.split('/')[-2]
+        # suit = card_dir[1]
 
         # Remove felt background
         green_mu, green_sigmas = imeditor.model_boundary(image)
@@ -59,18 +59,18 @@ def main(args):
                     # flattened 200x300 image of the card, and isolates the card's
                     # suit and rank from the image.
                     cards.append(Cards.preprocess_card(cnts_sort[i],image))
+                    # cv2.imshow("Gray",cards[0].warp)
+                    # cv2.imshow("Color",cards[0].color_warp)
+                    # key = cv2.waitKey(100000) & 0xFF
+                    # if key == ord("q"):
+                    #     return
 
                     # Find the best rank and suit match for the card.
-                    cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs,suit)
+                    cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs)
 
                     # Draw center point and match result on the image.
                     image = Cards.draw_results(image, cards[k])
                     k = k + 1
-
-                    # cv2.imshow(img_file,cards[k-1].warp)
-                    # key = cv2.waitKey(100000) & 0xFF
-                    # if key == ord("q"):
-                    #     return
             
             # Draw card contours on image (have to do contours all at once or
             # they do not show up properly for some reason)

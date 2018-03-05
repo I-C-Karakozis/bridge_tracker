@@ -28,6 +28,10 @@ BLACK = 0
 RED_S = ['H', 'D']
 BLACK_S = ['S', 'C']
 
+# color histogram thresholds:
+COLOR_RED_T = 100 # red channel only
+COLOR_BLACK_T = 80 # all channels
+
 ### ------------------------ ###
 
 def model_boundary(img):
@@ -107,4 +111,22 @@ def label_pixels(image, suit):
         else:
             print("Bad file name.", img_file)
             exit()
+
+def WRB_histogram(image):
+    ''' Compute white-red-black color histogram of image'''
+    red = 0
+    black = 0
+    white = 0
+
+    dims = np.shape(image)
+    for row in range(dims[0]):
+        for col in range(dims[1]):
+            if max(image[row][col]) < COLOR_BLACK_T:
+                 black = black + 1
+            elif image[row][col][2] - image[row][col][0] > COLOR_RED_T and image[row][col][2] - image[row][col][1] > COLOR_RED_T:
+                red = red + 1
+            else:
+                white = white + 1
+
+    return white, red, black
     

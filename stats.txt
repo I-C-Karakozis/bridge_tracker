@@ -5,7 +5,16 @@
 next steps 
 - collect samples: entire deck under 2 different lighting conditions --> standardize lighting
 - multiple cards per image
+- some gt missing (e.g. 3 of hearts flipped etc)
 
 assumptions:
 - for every card depicted, we can identify the suit
 - card on green felt with not super tight bounding box
+
+Improvements:
+- identify suit from colot histogram
+- color channel values to classify pixels
+- add every datapoint you forgot
+- thing of template matching locally
+- visualize the difference - get best_match_diff values
+- use corners and remove horizontal orientations
