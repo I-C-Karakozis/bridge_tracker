@@ -23,14 +23,12 @@ def main(args):
 
     # localize and classify all cards on each image
     imgs = 0
+    errors = 0.0
     for img_file in data_filenames:
-        # read image
+        # read image and get its gt label
         print(imgs, "-", img_file)
         image = cv2.imread(img_file)
-
-        # identify card suit
-        # card_dir = img_file.split('/')[-2]
-        # suit = card_dir[1]
+        gt = img_file.split('/')[-2]
 
         # Remove felt background
         green_mu, green_sigmas = imeditor.model_boundary(image)
@@ -69,8 +67,11 @@ def main(args):
                     cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs)
 
                     # Draw center point and match result on the image.
-                    image = Cards.draw_results(image, cards[k])
+                    image, label = Cards.draw_results(image, cards[k])
                     k = k + 1
+
+                    if label != gt:
+                        errors = errors + 1.0
             
             # Draw card contours on image (have to do contours all at once or
             # they do not show up properly for some reason)
@@ -82,6 +83,9 @@ def main(args):
         
         cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), image)
         imgs = imgs + 1
+
+    print("Accuracy:", errors / len(data_filenames))
+    print("Misclassifications:", errors)
 
     return
 
