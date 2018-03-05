@@ -2,6 +2,7 @@ import argparse
 import cv2
 import numpy as np
 import os
+import time
 
 from tools import Cards, imeditor
 from tools.general_purpose import *
@@ -20,6 +21,9 @@ def main(args):
     for path, subdirs, files in os.walk(args.data_dir):
         for name in files:
             data_filenames.append(os.path.join(path, name))
+
+    # start timing
+    start = time.time()
 
     # localize and classify all cards on each image
     imgs = 0
@@ -84,8 +88,14 @@ def main(args):
         cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), image)
         imgs = imgs + 1
 
-    print("Accuracy:", errors / len(data_filenames))
-    print("Misclassifications:", errors)
+    # report timing metrics
+    end = time.time()
+    print("Classification Time:", end - start)
+    print("Time per Classification:", (end - start) / len(data_filenames))
+
+    # report performance metrics
+    print("Misclassification Rate:", errors / len(data_filenames))
+    print("Misclassification Count:", errors)
 
     return
 
