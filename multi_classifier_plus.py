@@ -61,11 +61,6 @@ def main(args):
                     # flattened 200x300 image of the card, and isolates the card's
                     # suit and rank from the image.
                     cards.append(Cards.preprocess_card(cnts_sort[i],image))
-                    # cv2.imshow("Gray",cards[0].warp)
-                    # cv2.imshow("Color",cards[0].color_warp)
-                    # key = cv2.waitKey(100000) & 0xFF
-                    # if key == ord("q"):
-                    #     return
 
                     # Find the best rank and suit match for the card.
                     cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs)
@@ -76,6 +71,15 @@ def main(args):
 
                     if label != gt:
                         errors = errors + 1.0
+                        print("Mistake:", label)
+
+                        # debugging mode: show warps
+                        if args.show_errors != 0:
+                            cv2.imshow("Gray",cards[0].warp)
+                            cv2.imshow("Color",cards[0].color_warp)
+                            key = cv2.waitKey(100000) & 0xFF
+                            if key == ord("q"):
+                                cv2.destroyAllWindows()
             
             # Draw card contours on image (have to do contours all at once or
             # they do not show up properly for some reason)
@@ -101,7 +105,7 @@ def main(args):
 
 '''
 Sample execution: 
-python multi_classifier.py gt_dir data_dir target_dir 
+python multi_classifier.py gt_dir data_dir target_dir 0
 '''
 DESCRIPTION = """Multi-classifier of playing card suit-value. Requires cards placed on green felt."""
 
@@ -110,5 +114,6 @@ if __name__ == '__main__':
     parser.add_argument('gt_dir', help='Directory of groundtruth data.')
     parser.add_argument('data_dir', help='Directory of testing data.')
     parser.add_argument('target_dir', help='Directory to store classified images in.')
+    parser.add_argument('show_errors', type=int, help='Enter 0 to disable debugging mode')
     args = parser.parse_args()
     main(args)

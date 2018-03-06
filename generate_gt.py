@@ -12,7 +12,7 @@ def main(args):
     # collect all testing data filenames
     data_filenames = collect_all_files(args.data_dir)    
 
-    imgs = 0
+    imgs = 1
     for img_file in data_filenames:
         # load image
         print(imgs, "-", img_file)

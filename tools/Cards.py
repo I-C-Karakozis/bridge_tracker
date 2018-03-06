@@ -186,8 +186,8 @@ def match_card(qCard, train_labels, train_images):
 
     # rotate warps if not enough black/red pixels found
     if red + black < HOR_T:
-        # print("flipped")
-        # print("WRB_preflip:", white, red, black)
+        print("flipped")
+        print("WRB_preflip:", white, red, black)
 
         # correct orientation: rotate and rewarp warps
         rows, cols = np.shape(qCard.warp)
@@ -208,23 +208,23 @@ def match_card(qCard, train_labels, train_images):
 
     # label pixels
     imeditor.label_pixels(qCard.warp, suit)
-    # cv2.imshow("Labelled",qCard.warp)
-    # cv2.imshow("Color",qCard.color_warp)
-    # cv2.imshow("Corner",Qcorner)
-    # key = cv2.waitKey(100000) & 0xFF
-    # if key == ord("q"):
-    #     cv2.destroyAllWindows()
         
     # Difference the query card from each of the groundtruth images,
     # and store the result with the least difference
     for gt_img, gt_label in zip(train_images, train_labels):
 
-            diff = np.sum(qCard.warp != gt_img)
+            orig = qCard.warp
+            up = np.roll(qCard.warp, 1, axis=1)
+            down = np.roll(qCard.warp, -1, axis=1)
+            right = np.roll(qCard.warp, 1, axis=0)
+            left = np.roll(qCard.warp, -1, axis=0)
+            diff = min(np.sum(orig != gt_img), np.sum(up != gt_img), np.sum(down != gt_img),
+                       np.sum(left != gt_img), np.sum(right!= gt_img))
             
             if diff < best_match_diff:
                 best_match = gt_label
                 best_match_diff = diff
-
+                
     # Return the identiy of the card and the quality of the match
     return best_match, best_match_diff
     
