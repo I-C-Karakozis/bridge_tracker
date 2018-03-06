@@ -14,6 +14,7 @@ def main(args):
     # remove background felt from image
     imgs = 0
     for img_file in data_filenames:
+        # load image
         print(imgs, "-", img_file)
         image = cv2.imread(img_file)
 

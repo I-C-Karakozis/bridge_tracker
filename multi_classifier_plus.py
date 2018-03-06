@@ -94,7 +94,7 @@ def main(args):
     print("Time per Classification:", (end - start) / len(data_filenames))
 
     # report performance metrics
-    print("Misclassification Rate:", errors / len(data_filenames))
+    print("Accuracy:", 1 - errors / len(data_filenames))
     print("Misclassification Count:", errors)
 
     return

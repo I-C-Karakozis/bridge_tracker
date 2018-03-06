@@ -167,9 +167,9 @@ def extract_card(contour, image):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    qCard.warp = flattener(image, pts, w, h)
+    qCard.warp, qCard.color_warp = flattener(image, pts, w, h)
 
-    return qCard.warp
+    return qCard.color_warp
   
 def match_card(qCard, train_labels, train_images):
     """Finds best card match for the query card. Differences

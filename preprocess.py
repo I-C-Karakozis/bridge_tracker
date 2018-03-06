@@ -48,7 +48,7 @@ def main(args):
 
 '''
 Sample execution: 
-python preprocess.py raw_data_dir target_dir 
+python preprocess.py raw_data_dir gt_dir 
 '''
 DESCRIPTION = """Preprocess images in raw_data_dir and store the preprocessed result in target_dir."""
 
