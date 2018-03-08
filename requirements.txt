@@ -3,4 +3,5 @@ numpy==1.14.1
 opencv-python==3.4.0.12
 scikit-learn==0.19.1
 scipy==1.0.0
+sk-video==1.1.10
 sklearn==0.0
