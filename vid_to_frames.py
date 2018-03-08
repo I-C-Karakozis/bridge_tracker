@@ -31,7 +31,6 @@ def main(args):
 
         # store 1 frame per second
         if count % FPS == 0:
-            # frame = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)
             skvideo.io.vwrite(os.path.join(args.target_dir, "second{:06d}.jpg".format(count)), frame)
 
         # extract one frame at a time

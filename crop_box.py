@@ -36,6 +36,7 @@ def classify(image, gt_labels, gt_imgs):
 
                 # Find the best rank and suit match for the card.
                 cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs)
+                cv2.imshow("Warp", cards[k].color_warp)
                 key = cv2.waitKey(100000) & 0xFF
                 if key == ord("q"):
                     cv2.destroyAllWindows()
@@ -68,7 +69,7 @@ def main(args):
         # load coordinates
         xy = box.split()
         label = xy[-1]
-        xy = [int(x) for x in xy[:-1]]
+        xy = [2*int(x) for x in xy[:-1]]
 
         # get card crop
         crop = image[xy[1]:xy[3], xy[0]:xy[2]]

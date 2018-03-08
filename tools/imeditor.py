@@ -123,7 +123,7 @@ def WRB_histogram(image):
         for col in range(dims[1]):
             if max(image[row][col]) < COLOR_BLACK_T:
                  black = black + 1
-            elif image[row][col][2] - image[row][col][0] > COLOR_RED_T and image[row][col][2] - image[row][col][1] > COLOR_RED_T:
+            elif max(image[row][col][2],image[row][col][0]) - image[row][col][0] > COLOR_RED_T and max(image[row][col][2],image[row][col][1]) - image[row][col][1] > COLOR_RED_T:
                 red = red + 1
             else:
                 white = white + 1
