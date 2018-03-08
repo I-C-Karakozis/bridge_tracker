@@ -183,28 +183,34 @@ def match_card(qCard, train_labels, train_images):
     # create color histogram
     Qcorner = qCard.color_warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
     white, red, black = imeditor.WRB_histogram(Qcorner)
+    fg_pixels = red + black
+    print("WRB_preflip:", white, red, black)    
 
-    # rotate warps if not enough black/red pixels found
-    if red + black < HOR_T:
+    # correct orientation: rotate and rewarp warps
+    rows, cols = np.shape(qCard.warp)
+    dst = imutils.rotate_bound(qCard.color_warp, 90)
+    flipped_color_warp = cv2.resize(dst, (cols, rows))  
+    flipped_warp = cv2.cvtColor(flipped_color_warp, cv2.COLOR_BGR2GRAY) 
+
+    # recompute color histogram on corrected orientation
+    Qcorner = flipped_color_warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
+    flipped_white, flipped_red, flipped_black = imeditor.WRB_histogram(Qcorner)
+    flipped_fg_pixels = flipped_red + flipped_black
+    print("WRB_flip:", flipped_white, flipped_red, flipped_black) 
+
+    # pick best orientation; rotate warps if not enough black/red pixels found
+    if flipped_fg_pixels > fg_pixels:
         print("flipped")
-        print("WRB_preflip:", white, red, black)
-
-        # correct orientation: rotate and rewarp warps
-        rows, cols = np.shape(qCard.warp)
-        dst = imutils.rotate_bound(qCard.color_warp, 90)
-        qCard.color_warp = cv2.resize(dst, (cols, rows))  
-        qCard.warp = cv2.cvtColor(qCard.color_warp, cv2.COLOR_BGR2GRAY) 
-
-        # recompute color histogram on corrected orientation
-        Qcorner = qCard.color_warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
-        white, red, black = imeditor.WRB_histogram(Qcorner)    
+        qCard.color_warp = flipped_color_warp
+        qCard.warp = flipped_warp
+        red = flipped_red
+        black = flipped_black
 
     # identify card color from color histogram of the card corner    
     if red > black:
         suit = imeditor.RED_S[0]
     else:
         suit = imeditor.BLACK_S[0]
-    # print("WRB", white, red, black)
 
     # label pixels
     imeditor.label_pixels(qCard.warp, suit)
