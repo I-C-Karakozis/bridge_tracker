@@ -2,52 +2,8 @@ import argparse
 import cv2
 import os
 
-from tools import Cards, imeditor
+from tools import Cards, imeditor, gt
 from tools.general_purpose import *
-
-def classify(image, gt_labels, gt_imgs):
-    # Remove felt background
-    green_mu, green_sigmas = imeditor.model_boundary(image)
-    no_felt = imeditor.remove_background(image, green_mu, green_sigmas)
-
-    # Pre-process camera image (gray, blur, and threshold it)
-    pre_proc = Cards.preprocess_image(no_felt)
-    
-    # Find and sort the contours of all cards in the image (query cards)
-    cnts_sort, cnt_is_card = Cards.find_cards(pre_proc)
-
-    # If there are no contours, do nothing
-    if len(cnts_sort) != 0:
-
-        # Initialize a new "cards" list to assign the card objects.
-        # k indexes the newly made array of cards.
-        cards = []
-        k = 0
-
-        # For each contour detected:
-        for i in range(len(cnts_sort)):
-            if (cnt_is_card[i] == 1):
-                # Create a card object from the contour and append it to the list of cards.
-                # preprocess_card function takes the card contour and contour and
-                # determines the cards properties (corner points, etc). It generates a
-                # flattened 200x300 image of the card, and isolates the card's
-                # suit and rank from the image.
-                cards.append(Cards.preprocess_card(cnts_sort[i],image))
-
-                # Find the best rank and suit match for the card.
-                cards[k].best_match, cards[k].diff = Cards.match_card(cards[k],gt_labels,gt_imgs)
-                cv2.imshow("Warp", cards[k].color_warp)
-                key = cv2.waitKey(100000) & 0xFF
-                if key == ord("q"):
-                    cv2.destroyAllWindows()
-
-                # Draw center point and match result on the image.
-                image, label = Cards.draw_results(image, cards[k])
-                k = k + 1   
-
-                return label
-
-    return None
 
 def main(args):
 
@@ -60,12 +16,12 @@ def main(args):
 
     # load image and ground truth
     image = cv2.imread(args.image)
-    with open(args.gt_txt) as f:
-        gt = f.readlines()
-    gt = gt[1:]
+    with open(args.box_txt) as f:
+        boxes = f.readlines()
+    boxes = boxes[1:]
 
     # draw bounding boxes on image
-    for box in gt:
+    for box in boxes:
         # load coordinates
         xy = box.split()
         label = xy[-1]
@@ -73,15 +29,18 @@ def main(args):
 
         # get card crop
         crop = image[xy[1]:xy[3], xy[0]:xy[2]]
-        cv2.imshow("Boxes", crop)
-        key = cv2.waitKey(100000) & 0xFF
-        if key == ord("q"):
-            cv2.destroyAllWindows()
 
-        # classify
-        pred = classify(crop, gt_labels, gt_imgs)
-        print("Prediction:", pred)
-        print("Groundtruth:", label)
+        if crop is not None:
+            # show crop
+            cv2.imshow("Boxes", crop)
+            key = cv2.waitKey(100000) & 0xFF
+            if key == ord("q"):
+                cv2.destroyAllWindows()
+
+            # classify
+            pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=1)
+            # print("Prediction:", pred)
+            # print("Groundtruth:", label)
 
     # show image
     cv2.imshow("Boxes", image)
@@ -89,18 +48,16 @@ def main(args):
     if key == ord("q"):
         cv2.destroyAllWindows()
 
-    return
-
 '''
 Sample execution: 
-python vid_to_frames.py image gt_txt gt_dir
+python crop_box.py image box_txt gt_dir
 '''
-DESCRIPTION = """Exctracts 1 frame per second from video."""
+DESCRIPTION = """Classifies cards in bounding boxes."""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
-    parser.add_argument('image', help='Path to video.')
-    parser.add_argument('gt_txt', help='Directory to save frames in.')
-    parser.add_argument('gt_dir', help='Directory to save frames in.')
+    parser.add_argument('image', help='Image to classify cards from.')
+    parser.add_argument('box_txt', help='Text document with bounding boxes.')
+    parser.add_argument('gt_dir', help='Directory with groundtruth templates.')
     args = parser.parse_args()
     main(args)

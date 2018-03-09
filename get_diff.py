@@ -15,7 +15,9 @@ def main(args):
         for img2_file in imgs2:
 
             # load images
-            img1 = cv2.cvtColor(gt.extract_card(cv2.imread(img1_file)),cv2.COLOR_BGR2GRAY)
+            img1 = cv2.imread(img1_file)
+            img1 = gt.extract_card(img1)
+            img1 = cv2.cvtColor(img1,cv2.COLOR_BGR2GRAY)
             imeditor.label_pixels(img1, img1_file[-5])
             img2 = cv2.cvtColor(cv2.imread(img2_file),cv2.COLOR_BGR2GRAY)
             dims = np.shape(img1)
