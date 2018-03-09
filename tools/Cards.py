@@ -38,11 +38,12 @@ class Query_card:
     """Structure to store information about query cards in the camera image."""
 
     def __init__(self):
-        self.color_warp = []
         self.contour = [] # Contour of card
         self.width, self.height = 0, 0 # Width and height of card
         self.corner_pts = [] # Corner points of card
         self.center = [] # Center point of card
+        self.color_warp = [] # 200x300, flattened, color, blurred image
+        self.rotated_color_warp = [] # 200x300 rotated color_warp
         self.warp = [] # 200x300, flattened, grayed, blurred image
         self.best_match = "Unknown" # Best matched rank
         self.diff = 0 # Difference between card image and best matched gt image
@@ -138,7 +139,7 @@ def preprocess_card(contour, image):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    qCard.warp, qCard.color_warp = flattener(image, pts, w, h)
+    qCard.warp, qCard.color_warp, qCard.rotated_color_warp = flattener(image, pts, w, h)
 
     return qCard
 
@@ -167,7 +168,7 @@ def extract_card(contour, image):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    qCard.warp, qCard.color_warp = flattener(image, pts, w, h)
+    qCard.warp, qCard.color_warp, qCard.rotated_color_warp = flattener(image, pts, w, h)
 
     return qCard.color_warp
   
@@ -177,11 +178,10 @@ def match_card(qCard, train_labels, train_images):
     The best match is the groundtrugh that has the least difference."""
 
     best_match_diff = sys.maxint
-    best_match = "Unknown"
-    suit = "Unknown"    
+    best_match = "Unknown"   
 
     # create color histogram
-    Qcorner = qCard.color_warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
+    Qcorner = qCard.color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
     white, red, black = imeditor.WRB_histogram(Qcorner)
     fg_pixels = red + black
     print("WRB_preflip:", white, red, black)    
@@ -189,22 +189,22 @@ def match_card(qCard, train_labels, train_images):
     # correct orientation: rotate and rewarp warps
     rows, cols = np.shape(qCard.warp)
     dst = imutils.rotate_bound(qCard.color_warp, 90)
-    flipped_color_warp = cv2.resize(dst, (cols, rows))  
-    flipped_warp = cv2.cvtColor(flipped_color_warp, cv2.COLOR_BGR2GRAY) 
+    rotated_color_warp = cv2.resize(dst, (cols, rows))  
+    rotated_warp = cv2.cvtColor(rotated_color_warp, cv2.COLOR_BGR2GRAY) 
 
     # recompute color histogram on corrected orientation
-    Qcorner = flipped_color_warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
-    flipped_white, flipped_red, flipped_black = imeditor.WRB_histogram(Qcorner)
-    flipped_fg_pixels = flipped_red + flipped_black
-    print("WRB_flip:", flipped_white, flipped_red, flipped_black) 
+    Qcorner = rotated_color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
+    rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner)
+    rotated_fg_pixels = rotated_red + rotated_black
+    print("WRB_flip:", rotated_white, rotated_red, rotated_black) 
 
     # pick best orientation; rotate warps if not enough black/red pixels found
-    if flipped_fg_pixels > fg_pixels:
-        print("flipped")
-        qCard.color_warp = flipped_color_warp
-        qCard.warp = flipped_warp
-        red = flipped_red
-        black = flipped_black
+    if rotated_fg_pixels > fg_pixels:
+        print("rotated")
+        qCard.color_warp = rotated_color_warp
+        qCard.warp = rotated_warp
+        red = rotated_red
+        black = rotated_black
 
     # identify card color from color histogram of the card corner    
     if red > black:
@@ -313,6 +313,7 @@ def flattener(image, pts, w, h):
     dst = np.array([[0,0],[maxWidth-1,0],[maxWidth-1,maxHeight-1],[0, maxHeight-1]], np.float32)
     M = cv2.getPerspectiveTransform(temp_rect,dst)
     color_warp = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
+    rotated_color_warp = imutils.rotate_bound(color_warp, 90)
     gray_warp = cv2.cvtColor(color_warp,cv2.COLOR_BGR2GRAY)        
 
-    return gray_warp, color_warp
+    return gray_warp, color_warp, rotated_color_warp

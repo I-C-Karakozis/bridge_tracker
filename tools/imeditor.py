@@ -77,10 +77,6 @@ def remove_background(img, mu, sigmas):
     mask = np.where(stats.h_test(zscore, confidence=CONFIDENCE, 
                                        dof=DOF), 0, 255).astype(np.uint8)
 
-    # despeckle
-    for j in range(MEDFILT_ITERS):
-        mask = cv2.medianBlur(mask, MEDFILT_SIZE)
-
     black_frame = np.zeros(dims, dtype=np.uint8)
     foreground = np.where(mask > 0, img, black_frame)
     return foreground
