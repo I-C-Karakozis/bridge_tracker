@@ -43,7 +43,6 @@ class Query_card:
         self.corner_pts = [] # Corner points of card
         self.center = [] # Center point of card
         self.color_warp = [] # 200x300, flattened, color, blurred image
-        self.rotated_color_warp = [] # 200x300 rotated color_warp
         self.warp = [] # 200x300, flattened, grayed, blurred image
         self.best_match = "Unknown" # Best matched rank
         self.diff = 0 # Difference between card image and best matched gt image
@@ -139,7 +138,7 @@ def preprocess_card(contour, image):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    qCard.warp, qCard.color_warp, qCard.rotated_color_warp = flattener(image, pts, w, h)
+    qCard.warp, qCard.color_warp = flattener(image, pts, w, h)
 
     return qCard
 
@@ -168,71 +167,87 @@ def extract_card(contour, image):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    qCard.warp, qCard.color_warp, qCard.rotated_color_warp = flattener(image, pts, w, h)
+    qCard.warp, qCard.color_warp = flattener(image, pts, w, h)
 
     return qCard.color_warp
-  
-def match_card(qCard, train_labels, train_images):
-    """Finds best card match for the query card. Differences
-    the query card image with the groundtruth card images.
-    The best match is the groundtrugh that has the least difference."""
 
+def template_match(warp, suit, train_images, train_labels):
+    '''
+    Label all pixels of the warp based on the specified suit.
+    Perform template matching against train images with groundtruth train_labels.
+    Return best match.
+    '''
     best_match_diff = sys.maxint
-    best_match = "Unknown"   
-
-    # create color histogram
-    Qcorner = qCard.color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
-    white, red, black = imeditor.WRB_histogram(Qcorner)
-    fg_pixels = red + black
-    print("WRB_preflip:", white, red, black)    
-
-    # correct orientation: rotate and rewarp warps
-    rows, cols = np.shape(qCard.warp)
-    dst = imutils.rotate_bound(qCard.color_warp, 90)
-    rotated_color_warp = cv2.resize(dst, (cols, rows))  
-    rotated_warp = cv2.cvtColor(rotated_color_warp, cv2.COLOR_BGR2GRAY) 
-
-    # recompute color histogram on corrected orientation
-    Qcorner = rotated_color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
-    rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner)
-    rotated_fg_pixels = rotated_red + rotated_black
-    print("WRB_flip:", rotated_white, rotated_red, rotated_black) 
-
-    # pick best orientation; rotate warps if not enough black/red pixels found
-    if rotated_fg_pixels > fg_pixels:
-        print("rotated")
-        qCard.color_warp = rotated_color_warp
-        qCard.warp = rotated_warp
-        red = rotated_red
-        black = rotated_black
-
-    # identify card color from color histogram of the card corner    
-    if red > black:
-        suit = imeditor.RED_S[0]
-    else:
-        suit = imeditor.BLACK_S[0]
+    best_match = "Unknown" 
 
     # label pixels
-    imeditor.label_pixels(qCard.warp, suit)
+    imeditor.label_pixels(warp, suit)
         
     # Difference the query card from each of the groundtruth images,
     # and store the result with the least difference
     for gt_img, gt_label in zip(train_images, train_labels):
 
-            orig = qCard.warp
-            up = np.roll(qCard.warp, 1, axis=1)
-            down = np.roll(qCard.warp, -1, axis=1)
-            right = np.roll(qCard.warp, 1, axis=0)
-            left = np.roll(qCard.warp, -1, axis=0)
+            orig = warp
+            up = np.roll(warp, 1, axis=1)
+            down = np.roll(warp, -1, axis=1)
+            right = np.roll(warp, 1, axis=0)
+            left = np.roll(warp, -1, axis=0)
             diff = min(np.sum(orig != gt_img), np.sum(up != gt_img), np.sum(down != gt_img),
                        np.sum(left != gt_img), np.sum(right!= gt_img))
             
             if diff < best_match_diff:
                 best_match = gt_label
                 best_match_diff = diff
-                
-    # Return the identiy of the card and the quality of the match
+
     return best_match, best_match_diff
+  
+def match_card(qCard, train_labels, train_images):
+    """Finds best card match for the query card. Differences
+    the query card image with the groundtruth card images.
+    The best match is the groundtrugh that has the least difference."""  
+
+    # create color histogram
+    Qcorner = qCard.color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
+    white, red, black = imeditor.WRB_histogram(Qcorner)
+    fg_pixels = red + black
+    print("WRB_preflip:", white, red, black)   
+
+    # identify card color from color histogram of the card corner    
+    if red > black:
+        suit = imeditor.RED_S[0]
+    else:
+        suit = imeditor.BLACK_S[0] 
+
+    best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
+
+    # change the warp orientation
+    dst = imutils.rotate_bound(qCard.color_warp, 90)
+    rotated_color_warp = cv2.resize(dst, (200, 300))  
+    rotated_warp = cv2.cvtColor(rotated_color_warp, cv2.COLOR_BGR2GRAY) 
+
+    # recompute color histogram on new orientation
+    Qcorner = rotated_color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
+    rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner)
+    rotated_fg_pixels = rotated_red + rotated_black
+    print("WRB_rotated:", rotated_white, rotated_red, rotated_black) 
+
+    # identify card color from color histogram of the card corner    
+    if rotated_red > rotated_black:
+        rotated_suit = imeditor.RED_S[0]
+    else:
+        rotated_suit = imeditor.BLACK_S[0] 
+
+    r_best_match, r_best_match_diff = template_match(rotated_warp, rotated_suit, train_images, train_labels)
+
+            up = np.roll(qCard.warp, 1, axis=1)
+    # pick best match and return it
+    if best_match_diff <= r_best_match_diff:
+        return best_match, best_match_diff
+    else:
+        print("rotated")
+        qCard.color_warp = rotated_color_warp
+        qCard.warp = rotated_warp
+        return r_best_match, r_best_match
     
 def draw_results(image, qCard):
     """Draw the card label, center point, and contour on the camera image."""
@@ -313,7 +328,6 @@ def flattener(image, pts, w, h):
     dst = np.array([[0,0],[maxWidth-1,0],[maxWidth-1,maxHeight-1],[0, maxHeight-1]], np.float32)
     M = cv2.getPerspectiveTransform(temp_rect,dst)
     color_warp = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
-    rotated_color_warp = imutils.rotate_bound(color_warp, 90)
     gray_warp = cv2.cvtColor(color_warp,cv2.COLOR_BGR2GRAY)        
 
-    return gray_warp, color_warp, rotated_color_warp
+    return gray_warp, color_warp

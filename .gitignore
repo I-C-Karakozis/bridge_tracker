@@ -1,5 +1,8 @@
 /venv/*
-*.jpg
-*.png
+data/*
+frames/*
+classifications/*
+errors/*
+training_data/*
 *.pyc
 *.mp4
