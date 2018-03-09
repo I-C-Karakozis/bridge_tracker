@@ -58,6 +58,7 @@ def find_cards(image, gt_labels, gt_imgs, debug=0):
         # k indexes the newly made array of cards.
         cards = []
         k = 0
+        label = "No card found."
 
         # For each contour detected:
         for i in range(len(cnts_sort)):
@@ -81,8 +82,15 @@ def find_cards(image, gt_labels, gt_imgs, debug=0):
 
                 # Draw center point and match result on the image.
                 image, label = Cards.draw_results(image, cards[k])
-                k = k + 1   
+                k = k + 1 
 
-                return label
+        # Draw card contours on image for all cards
+        if (len(cards) != 0):
+            temp_cnts = []
+            for i in range(len(cards)):
+                temp_cnts.append(cards[i].contour)
+            cv2.drawContours(image,temp_cnts, -1, (255,0,0), 2)  
+
+        return label
 
     return None
