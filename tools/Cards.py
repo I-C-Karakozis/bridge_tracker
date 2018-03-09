@@ -239,7 +239,6 @@ def match_card(qCard, train_labels, train_images):
 
     r_best_match, r_best_match_diff = template_match(rotated_warp, rotated_suit, train_images, train_labels)
 
-            up = np.roll(qCard.warp, 1, axis=1)
     # pick best match and return it
     if best_match_diff <= r_best_match_diff:
         return best_match, best_match_diff

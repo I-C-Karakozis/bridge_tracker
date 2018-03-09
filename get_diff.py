@@ -48,14 +48,15 @@ def main(args):
             if key == ord("q"):
                 cv2.destroyAllWindows()
             elif key == ord("s"):
-                file_name = img1_file.split(".")[0] + "vs" + img2_file.split(".")[0] +".png"
-                cv2.imwrite(file_name, diff)
+                file_name = img1_file.split('/')[-1].split(".")[0] + "vs" + img2_file.split('/')[-1]
+                ret = cv2.imwrite(os.path.join(args.target_dir, file_name), diff)
+                print("Saved:", ret, file_name)
                 cv2.destroyAllWindows()
 
 
 '''
 Sample execution: 
-python get_diff.py dir1 dir2 
+python get_diff.py dir1 dir2 target_dir
 '''
 DESCRIPTION = """Show the diff between the images in the two directories."""
 
@@ -63,5 +64,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('dir1')
     parser.add_argument('dir2')
+    parser.add_argument('target_dir')
     args = parser.parse_args()
     main(args)
