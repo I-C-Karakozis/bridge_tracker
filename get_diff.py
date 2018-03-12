@@ -49,7 +49,7 @@ def main(args):
                 cv2.destroyAllWindows()
             elif key == ord("s"):
                 file_name = img1_file.split('/')[-1].split(".")[0] + "vs" + img2_file.split('/')[-1]
-                ret = cv2.imwrite(os.path.join(args.target_dir, file_name), diff)
+                ret = cv2.imwrite(os.path.join(args.target_dir, file_name), diff[2:-2,2:-2])
                 print("Saved:", ret, file_name)
                 cv2.destroyAllWindows()
 
