@@ -181,23 +181,20 @@ def template_match(warp, suit, train_images, train_labels):
     best_match = "Unknown" 
 
     # label pixels
-    imeditor.label_pixels(warp, suit)
+    imeditor.label_pixels(warp, suit[0])
         
     # Difference the query card from each of the groundtruth images,
     # and store the result with the least difference
     for gt_img, gt_label in zip(train_images, train_labels):
 
-            orig = warp
-            up = np.roll(warp, 1, axis=1)
-            down = np.roll(warp, -1, axis=1)
-            right = np.roll(warp, 1, axis=0)
-            left = np.roll(warp, -1, axis=0)
-            diff = min(np.sum(orig != gt_img), np.sum(up != gt_img), np.sum(down != gt_img),
-                       np.sum(left != gt_img), np.sum(right!= gt_img))
-            
-            if diff < best_match_diff:
-                best_match = gt_label
-                best_match_diff = diff
+            if gt_label[-1] in suit:
+                ret, orig = cv2.threshold(warp[2:-2,2:-2], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                ret, gt = cv2.threshold(gt_img[2:-2,2:-2], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                
+                diff = np.sum(cv2.distanceTransform(orig, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2) * np.invert(gt)) + np.sum(np.invert(orig) * cv2.distanceTransform(gt, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2))
+                if diff < best_match_diff:
+                    best_match = gt_label
+                    best_match_diff = diff
 
     return best_match, best_match_diff
   
@@ -214,9 +211,9 @@ def match_card(qCard, train_labels, train_images):
 
     # identify card color from color histogram of the card corner    
     if red > black:
-        suit = imeditor.RED_S[0]
+        suit = imeditor.RED_S
     else:
-        suit = imeditor.BLACK_S[0] 
+        suit = imeditor.BLACK_S 
 
     best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
 
@@ -233,9 +230,9 @@ def match_card(qCard, train_labels, train_images):
 
     # identify card color from color histogram of the card corner    
     if rotated_red > rotated_black:
-        rotated_suit = imeditor.RED_S[0]
+        rotated_suit = imeditor.RED_S
     else:
-        rotated_suit = imeditor.BLACK_S[0] 
+        rotated_suit = imeditor.BLACK_S 
 
     r_best_match, r_best_match_diff = template_match(rotated_warp, rotated_suit, train_images, train_labels)
 

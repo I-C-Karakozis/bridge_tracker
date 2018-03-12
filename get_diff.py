@@ -53,7 +53,6 @@ def main(args):
                 print("Saved:", ret, file_name)
                 cv2.destroyAllWindows()
 
-
 '''
 Sample execution: 
 python get_diff.py dir1 dir2 target_dir
