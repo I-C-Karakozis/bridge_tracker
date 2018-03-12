@@ -39,19 +39,19 @@ def main(args):
 
             if crop is not None:
                 # show crop
-                cv2.imshow("Boxes", crop)
-                key = cv2.waitKey(100000) & 0xFF
-                if key == ord("q"):
-                    cv2.destroyAllWindows()
+                # cv2.imshow("Boxes", crop)
+                # key = cv2.waitKey(100000) & 0xFF
+                # if key == ord("q"):
+                #     cv2.destroyAllWindows()
 
                 # classify
-                pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=1)
+                pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=0)
 
-            # show frame
-            cv2.imshow("Boxes", frame)
-            key = cv2.waitKey(100000) & 0xFF
-            if key == ord("q"):
-                cv2.destroyAllWindows()
+        # show frame
+        cv2.imshow("Boxes", frame)
+        key = cv2.waitKey(100000) & 0xFF
+        if key == ord("q"):
+            cv2.destroyAllWindows()
 
 '''
 Sample execution: 

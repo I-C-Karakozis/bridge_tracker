@@ -29,7 +29,7 @@ RED_S = ['H', 'D']
 BLACK_S = ['S', 'C']
 
 # color histogram thresholds:
-COLOR_RED_T = 100 # red channel only
+COLOR_RED_T = 20 # red channel only
 COLOR_BLACK_T = 140 # all channels
 
 ### ------------------------ ###

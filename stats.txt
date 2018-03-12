@@ -8,11 +8,21 @@ Implementation 2 - Results:
 99% successful localization
 1 second per card classification
 
-assumptions:
-- card on green felt with not very tight bounding box
+Implementation 3 (Distance Transform) - Results:
+2/164 mistakes --> 98.7% accuracy
+1 second per card classification
+Bad generalization
+
+
+Limitations:
+- Bounding Box guided
+- Red color threshold not as robust when noise is present
+- HARD Limitations: Occlusions, Shadow on Card, Motion Blur
+
+Assumptions:
+- card on green felt bonded loosely by bounding box
 - specific deck of cards used
 
 Improvements:
-- visualize the difference - get best_match_diff values
-- collect samples: entire deck under 2 different lighting conditions --> standardize lighting
 - multiple cards per image
+- better define color classification of card

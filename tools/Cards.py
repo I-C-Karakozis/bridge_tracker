@@ -210,7 +210,7 @@ def match_card(qCard, train_labels, train_images):
     print("WRB_preflip:", white, red, black)   
 
     # identify card color from color histogram of the card corner    
-    if red > black:
+    if red >= black:
         suit = imeditor.RED_S
     else:
         suit = imeditor.BLACK_S 
@@ -229,7 +229,7 @@ def match_card(qCard, train_labels, train_images):
     print("WRB_rotated:", rotated_white, rotated_red, rotated_black) 
 
     # identify card color from color histogram of the card corner    
-    if rotated_red > rotated_black:
+    if rotated_red >= rotated_black:
         rotated_suit = imeditor.RED_S
     else:
         rotated_suit = imeditor.BLACK_S 
@@ -237,7 +237,7 @@ def match_card(qCard, train_labels, train_images):
     r_best_match, r_best_match_diff = template_match(rotated_warp, rotated_suit, train_images, train_labels)
 
     # pick best match and return it
-    if best_match_diff <= r_best_match_diff:
+    if best_match_diff < r_best_match_diff:
         return best_match, best_match_diff
     else:
         print("rotated")
