@@ -12,12 +12,27 @@ Implementation 2 - Results:
 Implementation 3 (Distance Transform) - Results:
 2/164 mistakes --> 98.7% accuracy
 1 second per card classification
-Bad generalization
+Bad generalization 
 
 Implementation 4 (Generalized Distance Transform) - Results:
 4/164 mistakes --> 97.56% accuracy
 1 second per card classification
 Hard to determine good thresholds for pixel color values
+
+red_t = 40 --> better generalization, red_t = 100 --> better training error
+
+Limitations:
+- Bounding Box guided
+- Red color threshold not as robust when noise is present
+- HARD Limitations: Occlusions, Shadow on Card, Motion Blur
+
+Assumptions:
+- card on green felt bonded loosely by bounding box
+- specific deck of cards used
+
+Improvements:
+- multiple cards per image
+- better define color classification of card
 
 Notes for Meeting with Olga:
 0) Project tied to my IW
@@ -39,16 +54,3 @@ Notes from Meeting:
 --> Rotate frames before annotating.
 --> Bounding box tightness does not matter
 --> Class Project: On the task of Card Classification or Detection, compare Neural Net Approach to Alternative Approaches.
-
-Limitations:
-- Bounding Box guided
-- Red color threshold not as robust when noise is present
-- HARD Limitations: Occlusions, Shadow on Card, Motion Blur
-
-Assumptions:
-- card on green felt bonded loosely by bounding box
-- specific deck of cards used
-
-Improvements:
-- multiple cards per image
-- better define color classification of card

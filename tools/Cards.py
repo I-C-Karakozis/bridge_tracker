@@ -188,8 +188,10 @@ def template_match(warp, suit, train_images, train_labels):
     for gt_img, gt_label in zip(train_images, train_labels):
 
             if gt_label[-1] in suit:
-                ret, orig = cv2.threshold(warp[CORNER_HEIGHT:-CORNER_HEIGHT,CORNER_WIDTH:-CORNER_WIDTH], imeditor.RED+1, 255, cv2.THRESH_BINARY)
-                ret, gt = cv2.threshold(gt_img[CORNER_HEIGHT:-CORNER_HEIGHT,CORNER_WIDTH:-CORNER_WIDTH], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                # ret, orig = cv2.threshold(warp[CORNER_HEIGHT:-CORNER_HEIGHT,CORNER_WIDTH:-CORNER_WIDTH], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                # ret, gt = cv2.threshold(gt_img[CORNER_HEIGHT:-CORNER_HEIGHT,CORNER_WIDTH:-CORNER_WIDTH], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                ret, orig = cv2.threshold(warp[3:-3,3:-3], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                ret, gt = cv2.threshold(gt_img[3:-3,3:-3], imeditor.RED+1, 255, cv2.THRESH_BINARY)
                 
                 diff = np.sum(cv2.distanceTransform(orig, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2) * np.invert(gt)) + np.sum(np.invert(orig) * cv2.distanceTransform(gt, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2))
                 if diff < best_match_diff:
