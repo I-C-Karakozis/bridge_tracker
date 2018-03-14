@@ -18,6 +18,10 @@ def main(args):
     frames_files = collect_all_files(args.frames_dir)
     boxes_files = collect_all_files(args.box_dir)
 
+    # measure dataset size
+    box_count = 0
+    frame_count = len(frames_files)
+
     for frame, box_txt in zip(frames_files, boxes_files):
         # load frame and ground truth
         print(frame)
@@ -32,12 +36,14 @@ def main(args):
             # load coordinates
             xy = box.split()
             label = xy[-1]
-            xy = [2*int(x) for x in xy[:-1]]
+            a = 2.5
+            xy = [int(2.5*int(x)) for x in xy[:-1]]
 
             # get card crop
             crop = frame[xy[1]:xy[3], xy[0]:xy[2]]
 
-            if crop is not None:
+            if crop is not None and label != "Dummy":
+                box_count = box_count + 1
                 # show crop
                 # cv2.imshow("Boxes", crop)
                 # key = cv2.waitKey(100000) & 0xFF
@@ -47,11 +53,16 @@ def main(args):
                 # classify
                 pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=0)
 
+            # draw box
+            cv2.rectangle(frame, (xy[0], xy[1]), (xy[2], xy[3]), (255,255,255), thickness=4)
+
         # show frame
         cv2.imshow("Boxes", frame)
         key = cv2.waitKey(100000) & 0xFF
         if key == ord("q"):
             cv2.destroyAllWindows()
+
+        print("Frames:", frame_count, "- Boxes:", box_count)
 
 '''
 Sample execution: 

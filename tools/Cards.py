@@ -255,8 +255,8 @@ def draw_results(image, qCard):
     label = qCard.best_match
 
     # Draw card label twice, so letters have black outline
-    cv2.putText(image,(label),(x-60,y-10),font,1,(0,0,0),3,cv2.LINE_AA)
-    cv2.putText(image,(label),(x-60,y-10),font,1,(50,200,200),2,cv2.LINE_AA)
+    cv2.putText(image,(label),(x-60,y-10),font,1.5,(0,0,0),3,cv2.LINE_AA)
+    cv2.putText(image,(label),(x-60,y-10),font,1.5,(0,0,255),2,cv2.LINE_AA)
 
     return image, label
 
