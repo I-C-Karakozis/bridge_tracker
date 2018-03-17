@@ -66,8 +66,7 @@ def find_cards(image, gt_labels, gt_imgs, debug=0):
                 # Create a card object from the contour and append it to the list of cards.
                 # preprocess_card function takes the card contour and contour and
                 # determines the cards properties (corner points, etc). It generates a
-                # flattened 200x300 image of the card, and isolates the card's
-                # suit and rank from the image.
+                # flattened 200x300 image of the card.
                 cards.append(Cards.preprocess_card(cnts_sort[i],image))
 
                 # Find the best rank and suit match for the card.

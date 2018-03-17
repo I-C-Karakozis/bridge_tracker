@@ -52,21 +52,7 @@ def preprocess_image(image):
 
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray,(5,5),0)
-
-    # The best threshold level depends on the ambient lighting conditions.
-    # For bright lighting, a high threshold must be used to isolate the cards
-    # from the background. For dim lighting, a low threshold must be used.
-    # To make the card detector independent of lighting conditions, the
-    # following adaptive threshold method is used.
-    #
-    # A background pixel in the center top of the image is sampled to determine
-    # its intensity. The adaptive threshold is set at 50 (THRESH_ADDER) higher
-    # than that. This allows the threshold to adapt to the lighting conditions.
-    img_w, img_h = np.shape(image)[:2]
-    bkg_level = gray[int(img_h/100)][int(img_w/2)]
-    thresh_level = bkg_level + BKG_THRESH
-
-    retval, thresh = cv2.threshold(blur,thresh_level,255,cv2.THRESH_BINARY)
+    retval, thresh = cv2.threshold(blur,BKG_THRESH,255,cv2.THRESH_BINARY)
     
     return thresh
 
@@ -174,7 +160,7 @@ def extract_card(contour, image):
 def template_match(warp, suit, train_images, train_labels):
     '''
     Label all pixels of the warp based on the specified suit.
-    Perform template matching against train images with groundtruth train_labels.
+    Using the distance transform, perform template matching against train images with groundtruth train_labels.
     Return best match.
     '''
     best_match_diff = sys.maxint
@@ -183,16 +169,15 @@ def template_match(warp, suit, train_images, train_labels):
     # label pixels
     imeditor.label_pixels(warp, suit[0])
         
-    # Difference the query card from each of the groundtruth images,
-    # and store the result with the least difference
+    # template matching
     for gt_img, gt_label in zip(train_images, train_labels):
 
             if gt_label[-1] in suit:
-                # ret, orig = cv2.threshold(warp[CORNER_HEIGHT:-CORNER_HEIGHT,CORNER_WIDTH:-CORNER_WIDTH], imeditor.RED+1, 255, cv2.THRESH_BINARY)
-                # ret, gt = cv2.threshold(gt_img[CORNER_HEIGHT:-CORNER_HEIGHT,CORNER_WIDTH:-CORNER_WIDTH], imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                # threshold cards to separate foreground elements from white background elements
                 ret, orig = cv2.threshold(warp[3:-3,3:-3], imeditor.RED+1, 255, cv2.THRESH_BINARY)
                 ret, gt = cv2.threshold(gt_img[3:-3,3:-3], imeditor.RED+1, 255, cv2.THRESH_BINARY)
                 
+                # perform 2-way distance transform
                 diff = np.sum(cv2.distanceTransform(orig, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2) * np.invert(gt)) + np.sum(np.invert(orig) * cv2.distanceTransform(gt, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2))
                 if diff < best_match_diff:
                     best_match = gt_label
@@ -205,7 +190,7 @@ def match_card(qCard, train_labels, train_images):
     the query card image with the groundtruth card images.
     The best match is the groundtrugh that has the least difference."""  
 
-    # create color histogram
+    # create color histogram of corner
     Qcorner = qCard.color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
     white, red, black = imeditor.WRB_histogram(Qcorner)
     fg_pixels = red + black

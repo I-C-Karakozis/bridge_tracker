@@ -45,13 +45,13 @@ def main(args):
             if crop is not None and label != "Dummy":
                 box_count = box_count + 1
                 # show crop
-                # cv2.imshow("Boxes", crop)
-                # key = cv2.waitKey(100000) & 0xFF
-                # if key == ord("q"):
-                #     cv2.destroyAllWindows()
+                cv2.imshow("Boxes", crop)
+                key = cv2.waitKey(100000) & 0xFF
+                if key == ord("q"):
+                    cv2.destroyAllWindows()
 
                 # classify
-                pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=0)
+                pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=1)
 
             # draw box
             cv2.rectangle(frame, (xy[0], xy[1]), (xy[2], xy[3]), (255,255,255), thickness=4)

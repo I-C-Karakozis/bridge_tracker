@@ -58,10 +58,6 @@ def model_boundary(img):
             boundary[count] = img[row][col]
             count = count + 1
 
-    # remove outliers by consider Q1-Q3 pixels
-    boundary = np.sort(boundary)
-    boundary = boundary[int(0.25*count):int(0.75*count)] 
-
     # compute multivariate gaussian
     mu = np.mean(boundary, axis=0)
     sigmas = np.std(boundary, axis=0)
