@@ -30,10 +30,12 @@ def main(args):
         v = random.uniform(0.0, 1.0)
         if args.p > v:
             target = os.path.join(args.target_dir, 'train')
+            target = os.path.join(target, gt_label)
             cv2.imwrite(os.path.join(target, name+'_'+gt_label+'.png'), image)
             train = train + 1
         else:
             target = os.path.join(args.target_dir, 'val')
+            target = os.path.join(target, gt_label)
             cv2.imwrite(os.path.join(target, name+'_'+gt_label+'.png'), image)
             val = val + 1
 
