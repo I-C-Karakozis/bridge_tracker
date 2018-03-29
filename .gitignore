@@ -4,5 +4,6 @@ frames/*
 classifications/*
 errors/*
 training_data/*
+flattened_data/*
 *.pyc
 *.mp4
