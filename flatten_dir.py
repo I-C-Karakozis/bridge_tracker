@@ -45,7 +45,7 @@ def main(args):
 
 '''
 Sample execution: 
-python flatten_dir.py data_dir target_dir p
+python flatten_dir.py training_data flattened_data 0.7
 '''
 DESCRIPTION = """Splits data in data_dir into training and validation dataset where p=train/total."""
 
@@ -53,6 +53,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('data_dir', help='Directory with data.')
     parser.add_argument('target_dir', help='Directory to save images in.')
-    parser.add_argument('p', type=float, help='Proportion of data to be allocated to training. Pick value in (0,1)')
+    parser.add_argument('p', type=float, help='Proportion of data to be allocated to training. Pick value in (0.0,1.0)')
     args = parser.parse_args()
     main(args)

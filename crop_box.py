@@ -29,7 +29,6 @@ def main(args):
         with open(box_txt) as f:
             boxes = f.readlines()
         if not args.save_crops:
-            print(frame)
             print("Boxes:", boxes[0])
         boxes = boxes[1:]
 
@@ -38,8 +37,7 @@ def main(args):
             # load coordinates
             xy = box.split()
             label = xy[-1]
-            a = 2.5
-            xy = [int(2.5*int(x)) for x in xy[:-1]]
+            xy = [int(args.scale*int(x)) for x in xy[:-1]]
 
             # get card crop
             crop = frame[xy[1]:xy[3], xy[0]:xy[2]]
@@ -49,20 +47,20 @@ def main(args):
                 box_count = box_count + 1
 
                 if args.save_crops:
-                    card_dir = os.path.join("training_data", label)
+                    card_dir = os.path.join("data/all_data", label)
                     crop_path = os.path.join(card_dir, vid_name + "{:06d}.png".format(box_count))
                     print(crop_path)
                     cv2.imwrite(crop_path, crop) 
 
                 else:
                     # show crop
-                    # cv2.imshow("Boxes", crop)
-                    # key = cv2.waitKey(100000) & 0xFF
-                    # if key == ord("q"):
-                    #     cv2.destroyAllWindows()
+                    cv2.imshow("Boxes", crop)
+                    key = cv2.waitKey(100000) & 0xFF
+                    if key == ord("q"):
+                        cv2.destroyAllWindows()
 
                     # classify card
-                    pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=1)
+                    pred = gt.find_cards(crop, gt_labels, gt_imgs, debug=0)
 
             # draw box
             if not args.save_crops:
@@ -75,16 +73,17 @@ def main(args):
             if key == ord("q"):
                 cv2.destroyAllWindows()
 
-            print("Frames:", frame_count, "- Boxes:", box_count)
+        print("Frames:", frame_count, "- Boxes:", box_count)
 
 '''
 Sample execution: 
-python crop_box.py frames_dir box_dir gt_dir true
+python crop_box.py 2.5 frames/4K_rotated frames/labels/4K_rotated gt
 '''
 DESCRIPTION = """Classifies cards in bounding boxes."""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument('scale', type=float, help='Rescaling to do to the boundiing box coordinates.')
     parser.add_argument('frames_dir', help='Directory with frames to classify cards from.')
     parser.add_argument('box_dir', help='Directory with text documents with bounding boxes coordinates.')
     parser.add_argument('gt_dir', help='Directory with groundtruth templates.')
