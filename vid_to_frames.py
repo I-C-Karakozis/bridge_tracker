@@ -21,6 +21,10 @@ def main(args):
 
     start = time.time()
 
+    # setup directory
+    if not os.path.exists(args.target_dir):
+        os.makedirs(args.target_dir)
+
     # load video
     cap = skvideo.io.vreader(args.video)
     frame = next(cap, None)

@@ -7,3 +7,5 @@ training_data/*
 flattened_data/*
 *.pyc
 *.mp4
+196_frames/*
+197_frames/*
