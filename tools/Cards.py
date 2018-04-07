@@ -6,6 +6,7 @@
 # various steps of the card detection algorithm
 
 from sklearn.cluster import KMeans
+from matplotlib import pyplot as plt
 import numpy as np
 
 import cv2
@@ -27,7 +28,11 @@ CARD_MIN_AREA = 1000 #25000
 CORNER_WIDTH = 26
 CORNER_HEIGHT = 50
 
-# threshold of non-white pixels for horizontal orientation
+# Number of pixels to curtail from the edges to ensure no background is getting caught
+CURTAIL_H = 5
+CURTAIL_W = 3
+
+# Threshold of non-white pixels for horizontal orientation
 HOR_T = 40
 
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -135,7 +140,6 @@ def extract_card(contour, image):
     qCard = Query_card()
 
     qCard.contour = contour
-
     # Find perimeter of card and use it to approximate corner points
     peri = cv2.arcLength(contour,True)
     approx = cv2.approxPolyDP(contour,0.01*peri,True)
@@ -173,10 +177,15 @@ def template_match(warp, suit, train_images, train_labels):
     for gt_img, gt_label in zip(train_images, train_labels):
 
             if gt_label[-1] in suit:
+                # Curtail boundaries of card for to remove background that might have been included
+                # in the crop and can ruin the template matching
+                warp_cur = warp[CURTAIL_H:-CURTAIL_H, CURTAIL_W:-CURTAIL_W]
+                gt_img_cur = gt_img[CURTAIL_H:-CURTAIL_H, CURTAIL_W:-CURTAIL_W]
+
                 # threshold cards to separate foreground elements from white background elements
-                ret, orig = cv2.threshold(warp[3:-3,3:-3], imeditor.RED+1, 255, cv2.THRESH_BINARY)
-                ret, gt = cv2.threshold(gt_img[3:-3,3:-3], imeditor.RED+1, 255, cv2.THRESH_BINARY)
-                
+                ret, orig = cv2.threshold(warp_cur, imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                ret, gt = cv2.threshold(gt_img_cur, imeditor.RED+1, 255, cv2.THRESH_BINARY)
+
                 # perform 2-way distance transform
                 diff = np.sum(cv2.distanceTransform(orig, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2) * np.invert(gt)) + np.sum(np.invert(orig) * cv2.distanceTransform(gt, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2))
                 if diff < best_match_diff:
@@ -191,7 +200,7 @@ def match_card(qCard, train_labels, train_images):
     The best match is the groundtrugh that has the least difference."""  
 
     # create color histogram of corner
-    Qcorner = qCard.color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
+    Qcorner = qCard.color_warp[CURTAIL_H:CORNER_HEIGHT, CURTAIL_W:CORNER_WIDTH]
     white, red, black = imeditor.WRB_histogram(Qcorner)
     fg_pixels = red + black
     print("WRB_preflip:", white, red, black)   
@@ -203,14 +212,13 @@ def match_card(qCard, train_labels, train_images):
         suit = imeditor.BLACK_S 
 
     best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
-
     # change the warp orientation
     dst = imutils.rotate_bound(qCard.color_warp, 90)
     rotated_color_warp = cv2.resize(dst, (200, 300))  
     rotated_warp = cv2.cvtColor(rotated_color_warp, cv2.COLOR_BGR2GRAY) 
 
     # recompute color histogram on new orientation
-    Qcorner = rotated_color_warp[2:CORNER_HEIGHT, 2:CORNER_WIDTH]
+    Qcorner = rotated_color_warp[CURTAIL_H:CORNER_HEIGHT, CURTAIL_W:CORNER_WIDTH]
     rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner)
     rotated_fg_pixels = rotated_red + rotated_black
     print("WRB_rotated:", rotated_white, rotated_red, rotated_black) 

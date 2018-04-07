@@ -64,7 +64,7 @@ def main(args):
 
 '''
 Sample execution: 
-python multi_classifier.py gt_dir data_dir target_dir 0
+python multi_classifier.py gt data/training_data data/classifications 0
 '''
 DESCRIPTION = """Multi-classifier of playing card suit-value. Requires cards placed on green felt."""
 
