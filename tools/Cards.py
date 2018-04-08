@@ -31,9 +31,6 @@ CORNER_HEIGHT = 50
 CURTAIL_H = 8
 CURTAIL_W = 4
 
-# Threshold of non-white pixels for horizontal orientation
-HOR_T = 40
-
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 ### Structures to hold query card and train card information ###
@@ -212,15 +209,10 @@ def match_card(qCard, train_labels, train_images):
 
     if orientation == 0:
 
-        # create color histogram of corner    
-        # white, red, black = imeditor.WRB_histogram(Qcorner)
-        # fg_pixels = red + black
-        # print("WRB_preflip:", white, red, black)   
-
         # identify card color from color histogram of the card corner    
         red = float(low[2]) / half[2]
         other =  float(low[0]) / half[0] + float(low[1]) / half[1]
-        if red >= 3*other/4:
+        if red >= 2*other/3:
             suit = imeditor.RED_S
         else:
             suit = imeditor.BLACK_S 
@@ -228,15 +220,11 @@ def match_card(qCard, train_labels, train_images):
         best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
 
     else:
-        # recompute color histogram on new orientation
-        # rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner_rotated)
-        # rotated_fg_pixels = rotated_red + rotated_black
-        # print("WRB_rotated:", rotated_white, rotated_red, rotated_black) 
-
+        
         # identify card color from color histogram of the card corner  
         red = float(low[2]) / half[2]
-        other =  float(low[0]) / half[0] + float(low[1]) / half[1]
-        if red >= 3*other/4:
+        other = float(low[0]) / half[0] + float(low[1]) / half[1]
+        if red >= 2*other/3:
             rotated_suit = imeditor.RED_S
         else:
             rotated_suit = imeditor.BLACK_S 

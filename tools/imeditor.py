@@ -14,10 +14,6 @@ CONFIDENCE = 99
 # we use 3 degrees of freedom bc we use the RGB color space
 DOF = 3
 
-# despeckling configuration
-MEDFILT_ITERS = 1
-MEDFILT_SIZE = 5
-
 # threshold
 WHITE_T = 200
 
@@ -29,10 +25,6 @@ BLACK = 0
 # red and black suit
 RED_S = ['H', 'D']
 BLACK_S = ['S', 'C']
-
-# color histogram thresholds:
-COLOR_RED_T = 100 # red channel only
-COLOR_BLACK_T = 140 # all channels
 
 # color histogram LOW percentile
 LOW = 10
@@ -113,24 +105,6 @@ def label_pixels(image, suit):
             print("Bad file name.", img_file)
             exit()
 
-def WRB_histogram(image):
-    ''' Compute white-red-black color histogram of image'''
-    red = 0
-    black = 0
-    white = 0
-
-    dims = np.shape(image)
-    for row in range(dims[0]):
-        for col in range(dims[1]):
-            if max(image[row][col]) < COLOR_BLACK_T:
-                 black = black + 1
-            elif max(image[row][col][2],image[row][col][0]) - image[row][col][0] > COLOR_RED_T and max(image[row][col][2],image[row][col][1]) - image[row][col][1] > COLOR_RED_T:
-                red = red + 1
-            else:
-                white = white + 1
-
-    return white, red, black
-
 def orient_card(corner, corner_rotated):
     ''' 
     Identify which corner has the most non-white pixels 
@@ -160,5 +134,23 @@ def orient_card(corner, corner_rotated):
     else:
         return 1, m_half_rot, m_low_rot
 
+def despeckle(img, thresh):
+    """ 
+    Remove all connected components below size tresh on binary img.
+    """
+    # find all connected components; 8-way connectivity
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity=8)
 
+    # connectedComponentswithStats yields every seperated component with information on each of them, such as size
+    # take out the background which is also considered a component, but most of the time we don't want that.
+    sizes = stats[1:, -1]; nb_components = nb_components - 1
+    min_size = 10  
+    
+    # for every component in the image, you keep it only if it's above min_size
+    img2 = np.zeros((output.shape))
+    for i in range(0, nb_components):
+        if sizes[i] >= min_size:
+            img2[output == i + 1] = 255
+
+    return img2
     
