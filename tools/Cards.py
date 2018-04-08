@@ -6,7 +6,6 @@
 # various steps of the card detection algorithm
 
 from sklearn.cluster import KMeans
-from matplotlib import pyplot as plt
 import numpy as np
 
 import cv2
@@ -29,8 +28,8 @@ CORNER_WIDTH = 26
 CORNER_HEIGHT = 50
 
 # Number of pixels to curtail from the edges to ensure no background is getting caught
-CURTAIL_H = 5
-CURTAIL_W = 3
+CURTAIL_H = 8
+CURTAIL_W = 4
 
 # Threshold of non-white pixels for horizontal orientation
 HOR_T = 40
@@ -198,47 +197,53 @@ def match_card(qCard, train_labels, train_images):
     """Finds best card match for the query card. Differences
     the query card image with the groundtruth card images.
     The best match is the groundtrugh that has the least difference."""  
-
-    # create color histogram of corner
-    Qcorner = qCard.color_warp[CURTAIL_H:CORNER_HEIGHT, CURTAIL_W:CORNER_WIDTH]
-    white, red, black = imeditor.WRB_histogram(Qcorner)
-    fg_pixels = red + black
-    print("WRB_preflip:", white, red, black)   
-
-    # identify card color from color histogram of the card corner    
-    if red >= black:
-        suit = imeditor.RED_S
-    else:
-        suit = imeditor.BLACK_S 
-
-    best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
-    # change the warp orientation
+    
+    # obtain 90-rotated color warp
     dst = imutils.rotate_bound(qCard.color_warp, 90)
     rotated_color_warp = cv2.resize(dst, (200, 300))  
     rotated_warp = cv2.cvtColor(rotated_color_warp, cv2.COLOR_BGR2GRAY) 
 
-    # recompute color histogram on new orientation
-    Qcorner = rotated_color_warp[CURTAIL_H:CORNER_HEIGHT, CURTAIL_W:CORNER_WIDTH]
-    rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner)
-    rotated_fg_pixels = rotated_red + rotated_black
-    print("WRB_rotated:", rotated_white, rotated_red, rotated_black) 
+    # obtain corners
+    Qcorner = qCard.color_warp[CURTAIL_H:CORNER_HEIGHT, CURTAIL_W:CORNER_WIDTH]
+    Qcorner_rotated = rotated_color_warp[CURTAIL_H:CORNER_HEIGHT, CURTAIL_W:CORNER_WIDTH]
 
-    # identify card color from color histogram of the card corner    
-    if rotated_red >= rotated_black:
-        rotated_suit = imeditor.RED_S
+    # obtain correct card orientation from color histogram
+    orientation, half, low = imeditor.orient_card(Qcorner, Qcorner_rotated)
+
+    if orientation == 0:
+
+        # create color histogram of corner    
+        # white, red, black = imeditor.WRB_histogram(Qcorner)
+        # fg_pixels = red + black
+        # print("WRB_preflip:", white, red, black)   
+
+        # identify card color from color histogram of the card corner    
+        red = float(low[2]) / half[2]
+        other =  float(low[0]) / half[0] + float(low[1]) / half[1]
+        if red >= 3*other/4:
+            suit = imeditor.RED_S
+        else:
+            suit = imeditor.BLACK_S 
+
+        best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
+
     else:
-        rotated_suit = imeditor.BLACK_S 
+        # recompute color histogram on new orientation
+        # rotated_white, rotated_red, rotated_black = imeditor.WRB_histogram(Qcorner_rotated)
+        # rotated_fg_pixels = rotated_red + rotated_black
+        # print("WRB_rotated:", rotated_white, rotated_red, rotated_black) 
 
-    r_best_match, r_best_match_diff = template_match(rotated_warp, rotated_suit, train_images, train_labels)
+        # identify card color from color histogram of the card corner  
+        red = float(low[2]) / half[2]
+        other =  float(low[0]) / half[0] + float(low[1]) / half[1]
+        if red >= 3*other/4:
+            rotated_suit = imeditor.RED_S
+        else:
+            rotated_suit = imeditor.BLACK_S 
 
-    # pick best match and return it
-    if best_match_diff < r_best_match_diff:
-        return best_match, best_match_diff
-    else:
-        print("rotated")
-        qCard.color_warp = rotated_color_warp
-        qCard.warp = rotated_warp
-        return r_best_match, r_best_match
+        best_match, best_match_diff = template_match(rotated_warp, rotated_suit, train_images, train_labels)
+
+    return best_match, best_match_diff
     
 def draw_results(image, qCard):
     """Draw the card label, center point, and contour on the camera image."""

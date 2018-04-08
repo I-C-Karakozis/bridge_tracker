@@ -4,6 +4,8 @@ import numpy as np
 import Cards
 import stats
 
+from scipy.signal import argrelextrema, argrelmax
+
 ### ---- INITIALIZATION ---- ###
 
 # confidence level for background/foreground predictions
@@ -31,6 +33,9 @@ BLACK_S = ['S', 'C']
 # color histogram thresholds:
 COLOR_RED_T = 100 # red channel only
 COLOR_BLACK_T = 140 # all channels
+
+# color histogram LOW percentile
+LOW = 10
 
 ### ------------------------ ###
 
@@ -125,4 +130,35 @@ def WRB_histogram(image):
                 white = white + 1
 
     return white, red, black
+
+def orient_card(corner, corner_rotated):
+    ''' 
+    Identify which corner has the most non-white pixels 
+    from the color histogram. Returns 0 for original orientation, 
+    1 for rotated. Returns median and LOWth percentile value for each 
+    color channel.
+    '''
+    dims = np.shape(corner)
+    pixels = corner.reshape((dims[0]*dims[1], 3))
+    pixels_rotated = corner_rotated.reshape((dims[0]*dims[1], 3))
+
+    # find median and low value for each color channel for original orientation
+    pixels.sort(axis=0)
+    m_half = pixels[dims[0]*dims[1]/2]
+    m_low = pixels[dims[0]*dims[1]/10]
+
+    # find median and low value for each color channel for flipped orientation
+    pixels_rotated.sort(axis=0)
+    m_half_rot = pixels_rotated[dims[0]*dims[1]/2]
+    m_low_rot = pixels_rotated[dims[0]*dims[1]/LOW]
+    
+    # determine orientation by comparing color histograms
+    print("Orig:", sum(m_low[0:2]), "- Flipped:", sum(m_low_rot[0:2]))
+    print("Red:", m_low[2], "- Red Flipped:", m_low_rot[2])
+    if sum(m_low[0:2]) <= sum(m_low_rot[0:2]):
+        return 0, m_half, m_low
+    else:
+        return 1, m_half_rot, m_low_rot
+
+
     
