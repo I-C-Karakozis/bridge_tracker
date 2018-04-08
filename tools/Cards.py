@@ -166,23 +166,28 @@ def template_match(warp, suit, train_images, train_labels):
     best_match_diff = sys.maxint
     best_match = "Unknown" 
 
-    # label pixels
+    # label pixels and despeckle
     imeditor.label_pixels(warp, suit[0])
-        
+    imeditor.despeckle(warp, np.max(warp))
+    warp = cv2.bitwise_not(warp)
+
+    # threshold cards to separate foreground elements from white background elements                
+    warp_cur = warp[CURTAIL_H:-CURTAIL_H, CURTAIL_W:-CURTAIL_W]
+    ret, orig = cv2.threshold(warp_cur, imeditor.RED+1, 255, cv2.THRESH_BINARY)
+
     # template matching
     for gt_img, gt_label in zip(train_images, train_labels):
 
             if gt_label[-1] in suit:
                 # Curtail boundaries of card for to remove background that might have been included
                 # in the crop and can ruin the template matching
-                warp_cur = warp[CURTAIL_H:-CURTAIL_H, CURTAIL_W:-CURTAIL_W]
                 gt_img_cur = gt_img[CURTAIL_H:-CURTAIL_H, CURTAIL_W:-CURTAIL_W]
 
-                # threshold cards to separate foreground elements from white background elements
-                ret, orig = cv2.threshold(warp_cur, imeditor.RED+1, 255, cv2.THRESH_BINARY)
+                # threshold cards to separate foreground elements from white background elements                
                 ret, gt = cv2.threshold(gt_img_cur, imeditor.RED+1, 255, cv2.THRESH_BINARY)
 
                 # perform 2-way distance transform
+                cv2.distanceTransform(orig, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2)
                 diff = np.sum(cv2.distanceTransform(orig, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2) * np.invert(gt)) + np.sum(np.invert(orig) * cv2.distanceTransform(gt, maskSize=cv2.DIST_MASK_PRECISE, distanceType=cv2.DIST_L2))
                 if diff < best_match_diff:
                     best_match = gt_label
@@ -220,7 +225,7 @@ def match_card(qCard, train_labels, train_images):
         best_match, best_match_diff = template_match(qCard.warp, suit, train_images, train_labels)
 
     else:
-        
+
         # identify card color from color histogram of the card corner  
         red = float(low[2]) / half[2]
         other = float(low[0]) / half[0] + float(low[1]) / half[1]

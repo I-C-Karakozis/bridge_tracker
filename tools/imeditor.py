@@ -29,6 +29,9 @@ BLACK_S = ['S', 'C']
 # color histogram LOW percentile
 LOW = 10
 
+# minimum size of particles we want to keep (number of pixels)
+CC_THRESH = 10
+
 ### ------------------------ ###
 
 def model_boundary(img):
@@ -96,11 +99,11 @@ def label_pixels(image, suit):
 
     for pixel in np.nditer(image, op_flags=['readwrite']):
         if pixel >= WHITE_T:
-            pixel[...] = WHITE
+            pixel[...] = 0#WHITE
         elif suit in BLACK_S:
-            pixel[...] = BLACK
+            pixel[...] = 255#BLACK
         elif suit in RED_S:
-            pixel[...] = RED
+            pixel[...] = 255#RED
         else:
             print("Bad file name.", img_file)
             exit()
@@ -134,23 +137,20 @@ def orient_card(corner, corner_rotated):
     else:
         return 1, m_half_rot, m_low_rot
 
-def despeckle(img, thresh):
+def despeckle(img, value):
     """ 
     Remove all connected components below size tresh on binary img.
+    Foreground pixels have value > 0.
     """
     # find all connected components; 8-way connectivity
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity=8)
 
     # connectedComponentswithStats yields every seperated component with information on each of them, such as size
     # take out the background which is also considered a component, but most of the time we don't want that.
-    sizes = stats[1:, -1]; nb_components = nb_components - 1
-    min_size = 10  
+    sizes = stats[1:, -1]; nb_components = nb_components - 1 
     
     # for every component in the image, you keep it only if it's above min_size
-    img2 = np.zeros((output.shape))
     for i in range(0, nb_components):
-        if sizes[i] >= min_size:
-            img2[output == i + 1] = 255
-
-    return img2
+        if sizes[i] >= CC_THRESH:
+            img[output == i + 1] = int(value)
     
