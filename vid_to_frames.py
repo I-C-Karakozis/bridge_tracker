@@ -15,7 +15,7 @@ FPS = 24
 
 
 ## add mogrify in script
-## mogrify -format JPG -path ../005 *.jpg
+## mogrify -format JPG -path ../006 *.jpg
 
 def main(args):
 
