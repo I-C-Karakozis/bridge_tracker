@@ -47,7 +47,7 @@ def main(args):
                 box_count = box_count + 1
 
                 if args.save_crops:
-                    card_dir = os.path.join("data/all_data", label)
+                    card_dir = os.path.join("data/test_data", label)
                     crop_path = os.path.join(card_dir, vid_name + "{:06d}.png".format(box_count))
                     print(crop_path)
                     cv2.imwrite(crop_path, crop) 
@@ -77,7 +77,7 @@ def main(args):
 
 '''
 Sample execution: 
-python crop_box.py 2.5 frames/4K_rotated frames/labels/4K_rotated gt
+python crop_box.py 2.85714286 data/frames/1080p_complex_p1 data/labels/1080p_complex_p1 gt --save_crops true
 '''
 DESCRIPTION = """Classifies cards in bounding boxes."""
 

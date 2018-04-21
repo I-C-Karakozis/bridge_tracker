@@ -25,7 +25,7 @@ def load_imgs_gr(target_dir, img_filenames):
     for l in img_filenames:
         img = cv2.imread(os.path.join(target_dir, l))
         img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY) 
-    	imgs.append(img)        
+        imgs.append(img)        
     
     return imgs
 
