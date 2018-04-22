@@ -25,9 +25,12 @@ def main(args):
     # start timing
     start = time.time()
 
-    # localize and classify all cards on each image
+    # initialize error statistics
     imgs = 0
-    errors = 0.0
+    cls_errors = 0.0
+    missed = 0.0
+
+    # localize and classify all cards on each image
     for img_file in data_filenames:
         # read image and get its gt label
         print(imgs, "-", img_file)
@@ -37,18 +40,21 @@ def main(args):
         # find and classify all cards in image
         label = gt.find_cards(image, gt_labels, gt_imgs)        
 
-        if label is None or label != gt_label:
-            errors = errors + 1.0
+        if label is None:
+            missed = missed + 1.0  
+
+        elif label != gt_label:
+            cls_errors = cls_errors + 1.0
             print("Mistake:", label)
 
             # debugging mode --> show warps
-            if args.show_errors != 0:
+            if args.show_cls_errors != 0:
                 cv2.imshow("Gray", cards[0].warp)
                 key = cv2.waitKey(100000) & 0xFF
                 if key == ord("q"):
-                    cv2.destroyAllWindows()            
+                    cv2.destroyAllWindows()          
         
-        cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), image)
+        # cv2.imwrite(os.path.join(args.target_dir, '{:06d}.png'.format(imgs)), image)
         imgs = imgs + 1
 
     # report timing metrics
@@ -57,14 +63,15 @@ def main(args):
     print("Time per Classification:", (end - start) / len(data_filenames))
 
     # report performance metrics
-    print("Accuracy:", 1 - errors / len(data_filenames))
-    print("Misclassification Count:", errors)
+    print("Classification Accuracy:", 1 - cls_errors / (len(data_filenames) - missed))
+    print("Detection Accuracy:", 1 - missed / len(data_filenames))
+    print("Misclassification Count:", cls_errors)
 
     return
 
 '''
 Sample execution: 
-python multi_classifier.py gt data/training_data data/classifications 0
+python multi_classifier.py gt data/test_data data/classifications 0
 '''
 DESCRIPTION = """Multi-classifier of playing card suit-value. Requires cards placed on green felt."""
 
@@ -73,6 +80,6 @@ if __name__ == '__main__':
     parser.add_argument('gt_dir', help='Directory of groundtruth data.')
     parser.add_argument('data_dir', help='Directory of testing data.')
     parser.add_argument('target_dir', help='Directory to store classified images in.')
-    parser.add_argument('show_errors', type=int, help='Enter 0 to disable debugging mode')
+    parser.add_argument('show_cls_errors', type=int, help='Enter 0 to disable debugging mode')
     args = parser.parse_args()
     main(args)

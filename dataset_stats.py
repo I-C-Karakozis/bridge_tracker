@@ -27,6 +27,8 @@ for file in labels:
 
     counts_no_dummy[instances-1] = counts_no_dummy[instances-1] + 1
 
+print(np.sum(counts[:10] * index) / np.sum(counts))
+print(np.sum(counts_no_dummy[:10] * index) / np.sum(counts_no_dummy))
 plt.plot(index, counts[:10] / np.sum(counts) * 100, '-bo')
 plt.plot(index, counts_no_dummy[:10] / np.sum(counts) * 100, '-ro')
 plt.title("Number of Object Instances per Frame")

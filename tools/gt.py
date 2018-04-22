@@ -58,7 +58,7 @@ def find_cards(image, gt_labels, gt_imgs, debug=0):
         # k indexes the newly made array of cards.
         cards = []
         k = 0
-        label = "No card found."
+        label = None
 
         # For each contour detected:
         for i in range(len(cnts_sort)):

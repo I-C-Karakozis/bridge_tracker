@@ -31,6 +31,8 @@ CORNER_HEIGHT = 50
 CURTAIL_H = 8
 CURTAIL_W = 4
 
+SCALE = 1.0 / 1.5
+
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 ### Structures to hold query card and train card information ###
@@ -217,7 +219,7 @@ def match_card(qCard, train_labels, train_images):
         # identify card color from color histogram of the card corner    
         red = float(low[2]) / half[2]
         other =  float(low[0]) / half[0] + float(low[1]) / half[1]
-        if red >= 2*other/3:
+        if red >= SCALE*other:
             suit = imeditor.RED_S
         else:
             suit = imeditor.BLACK_S 
@@ -229,7 +231,7 @@ def match_card(qCard, train_labels, train_images):
         # identify card color from color histogram of the card corner  
         red = float(low[2]) / half[2]
         other = float(low[0]) / half[0] + float(low[1]) / half[1]
-        if red >= 2*other/3:
+        if red >= SCALE*other:
             rotated_suit = imeditor.RED_S
         else:
             rotated_suit = imeditor.BLACK_S 
