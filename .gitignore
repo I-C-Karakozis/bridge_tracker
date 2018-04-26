@@ -1,11 +1,4 @@
 /venv/*
 data/*
-frames/*
-classifications/*
-errors/*
-training_data/*
-flattened_data/*
+flattened_data_augm/*
 *.pyc
-*.mp4
-196_frames/*
-197_frames/*
